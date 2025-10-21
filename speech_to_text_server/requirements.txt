@@ -1,4 +1,0 @@
-psutil==7.0.0
-PyAudio==0.2.14
-SpeechRecognition==3.14.3
-websockets==15.0.1

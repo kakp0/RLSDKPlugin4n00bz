@@ -4,31 +4,34 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <bakkesmod/plugin/bakkesmodplugin.h>
 
+// Standard C++ Libraries
 #include <string>
 #include <vector>
 #include <functional>
 #include <memory>
+#include <array>
+#include <string_view>
+#include <optional>
+#include <filesystem>
+#include <span>
+#include <fstream>
 
-#include <BakkesmodPluginTemplate/IMGUI/imgui.h>
-#include <BakkesmodPluginTemplate/IMGUI/imgui_internal.h>
-#include <BakkesmodPluginTemplate/IMGUI/imgui_stdlib.h>
-#include <BakkesmodPluginTemplate/IMGUI/imgui_searchablecombo.h>
-#include <BakkesmodPluginTemplate/IMGUI/imgui_rangeslider.h>
-
-#include <limits.h>
+// Windows specific
 #include <Windows.h>
 #include <Psapi.h>
-#include <iostream>
-#include <fstream>
 #include <shellapi.h>
-
 #pragma comment(lib, "Shlwapi.lib")
 
+// Libraries
 #include <json/single_include/nlohmann/json.hpp>
+#include <BakkesmodPluginTemplate/IMGUI/imgui.h>
+#include <BakkesmodPluginTemplate/IMGUI/imgui_internal.h>
 #include <RLSDK/RLSDK_w_pch_includes/SdkHeaders.hpp>
 
+// Project specific
 #include "logging.h"
 
+extern std::shared_ptr<CVarManagerWrapper> _globalCvarManager; // <-- ADD THIS LINE
 
 namespace fs = std::filesystem;
 using json = nlohmann::json;
