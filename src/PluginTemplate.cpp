@@ -63,7 +63,7 @@ void PluginTemplate::initHooks()
 {
 	// Your hooks go here
 	// Example hook 1: This will be counted.
-	Hooks.hookEvent("Function TAGame.GameEvent_TA.EventMadwatchEnded",
+	Hooks.hookEvent("Function TAGame.GameEvent_TA.EventMatchEnded",
 	    HookType::Post,
 	    [this](std::string eventName)
 	    {
@@ -74,8 +74,7 @@ void PluginTemplate::initHooks()
 	// Example hook 2: This will be counted.
 	Hooks.hookEvent("Function ProjectX.WebRequest_X.HandleHttpRequestComplete", HookType::Pre, [this](std::string eventName) { /* ... */ });
 
-	// Example of a duplicate hook: This will NOT be counted by Hooks.GetHookCount().
-	Hooks.hookEvent("Function ProjectX.WebRequest_X.HandleHttpRequestComplete", HookType::Post, [this](std::string eventName) { /* ... */ });
+
 }
 
 CVarWrapper PluginTemplate::getCvar(const CvarData& cvar) { return cvarManager->getCvar(cvar.name); }
