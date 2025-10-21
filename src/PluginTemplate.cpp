@@ -24,6 +24,13 @@ void PluginTemplate::onLoad()
 	initCommands();
 	initHooks();
 
+	// The count now only includes successful (non-duplicate, valid-type) hooks.
+	size_t      hookCount       = Hooks.GetHookCount();
+	std::string notificationMsg = std::format("RLSDK is connected!\n{} event(s) successfully hooked.", hookCount);
+
+	// Spawn the notification with the hook count
+	Instances.SpawnNotification("Plugin Template", notificationMsg, 5);
+
 	LOG("PluginTemplate loaded! :)");
 }
 
@@ -48,9 +55,27 @@ void PluginTemplate::initCommands()
 	    [this](std::vector<std::string> args) { Instances.SpawnNotification("Plugin Template", "RLSDK is connected!", 5); });
 }
 
+
+
+
+
 void PluginTemplate::initHooks()
 {
 	// Your hooks go here
+	// Example hook 1: This will be counted.
+	Hooks.hookEvent("Function TAGame.GameEvent_TA.EventMadwatchEnded",
+	    HookType::Post,
+	    [this](std::string eventName)
+	    {
+		    std::string notification_msg = std::format("The event '{}' has fired!", eventName);
+		    Instances.SpawnNotification("Event Hooked!", notification_msg, 3, true);
+	    });
+
+	// Example hook 2: This will be counted.
+	Hooks.hookEvent("Function ProjectX.WebRequest_X.HandleHttpRequestComplete", HookType::Pre, [this](std::string eventName) { /* ... */ });
+
+	// Example of a duplicate hook: This will NOT be counted by Hooks.GetHookCount().
+	Hooks.hookEvent("Function ProjectX.WebRequest_X.HandleHttpRequestComplete", HookType::Post, [this](std::string eventName) { /* ... */ });
 }
 
 CVarWrapper PluginTemplate::getCvar(const CvarData& cvar) { return cvarManager->getCvar(cvar.name); }

@@ -3,6 +3,11 @@
 #include "bakkesmod/wrappers/GameWrapper.h"
 #include <unordered_set>
 
+// Required for LOG macro
+#include "logging.h"
+// Required for Instances.FindStaticFunction
+#include "Instances.hpp"
+
 enum class HookType
 {
 	Pre,
@@ -33,7 +38,9 @@ class HookManager
 public:
 	void init(const std::shared_ptr<GameWrapper>& gw) { m_gameWrapper = gw; }
 
-	void hookEvent(const std::string& eventName, HookType type, const std::function<void(std::string)>& callback)
+	[[nodiscard]] size_t GetHookCount() const { return m_hookedEvents.size(); }
+
+	bool hookEvent(const std::string& eventName, HookType type, const std::function<void(std::string)>& callback)
 	{
 		HookKey key{eventName, type};
 
@@ -44,7 +51,14 @@ public:
 #else
 			LOG("ERROR: Already hooked {}: \"{}\"", type == HookType::Pre ? "Pre" : "Post", eventName);
 #endif
-			return;
+			return false; // Return false on duplicate
+		}
+
+		// CHECK 1: Ensure the function actually exists in the RLSDK before hooking.
+		if (Instances.FindStaticFunction(eventName) == nullptr)
+		{
+			LOGERROR("Function does not exist! Hooking failed for: \"{}\"", eventName);
+			return false; // Return false if the function does not exist
 		}
 
 		switch (type)
@@ -57,21 +71,29 @@ public:
 			break;
 		default:
 			LOGERROR("Invalid hook type for event: \"{}\"", eventName);
-			break;
+			return false; // Return false on invalid type
 		}
 
 		m_hookedEvents.insert(key);
 		LOG("Hooked function {}: \"{}\"", type == HookType::Pre ? "PRE" : "POST", eventName);
+		return true; // Return true on success
 	}
 
-	void hookEvent(const std::string& eventName, HookType type, const std::function<void(ActorWrapper, void*, std::string)>& callback)
+	bool hookEvent(const std::string& eventName, HookType type, const std::function<void(ActorWrapper, void*, std::string)>& callback)
 	{
 		HookKey key{eventName, type};
 
 		if (m_hookedEvents.contains(key))
 		{
 			LOGERROR("Already hooked {}: \"{}\"", type == HookType::Pre ? "Pre" : "Post", eventName);
-			return;
+			return false; // Return false on duplicate
+		}
+
+		// CHECK 2: Ensure the function actually exists in the RLSDK before hooking.
+		if (Instances.FindStaticFunction(eventName) == nullptr)
+		{
+			LOGERROR("Function does not exist! Hooking failed for: \"{}\"", eventName);
+			return false; // Return false if the function does not exist
 		}
 
 		switch (type)
@@ -84,10 +106,11 @@ public:
 			break;
 		default:
 			LOGERROR("Invalid hook type for event: \"{}\"", eventName);
-			break;
+			return false; // Return false on invalid type
 		}
 
 		m_hookedEvents.insert(key);
+		return true; // Return true on success
 	}
 
 	void unhookEvent(const std::string& eventName, HookType type)
